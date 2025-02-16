@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  docsnetapi: 
+    image: docsnetapi
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=mssqlserver;Database=DocsNetDB;User Id=sa;Password=A141Kk1LEFZHEqN8UuR9fkjQAMEphziD;
+
+  mssqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssqlserver
+    environment:
+      SA_PASSWORD: "A141Kk1LEFZHEqN8UuR9fkjQAMEphziD"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"

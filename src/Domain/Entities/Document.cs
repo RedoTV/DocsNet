@@ -13,5 +13,5 @@ public class Document
     public string ShareLink { get; set;} = string.Empty;
 
     public ICollection<DocumentComment> Comments { get; set;} = new List<DocumentComment>();
-    public required int UserId {get; set;} 
+    public required string UserId {get; set;} 
 }

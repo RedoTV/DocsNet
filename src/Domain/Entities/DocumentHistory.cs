@@ -16,5 +16,5 @@ public class DocumentHistory
     // date when document moved to history
     public DateTime TransferDate { get; set; } = DateTime.Now;
 
-    public required int UserId { get; set; }
+    public required string UserId { get; set; }
 }

@@ -3,6 +3,8 @@ using Infrastructure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +19,7 @@ public static class DependencyInjection
     )
     {
         services.AddDbContext<DocsNetDbContext>(opts => 
-            opts.UseSqlServer(configuration.GetConnectionString("DbConnection")));
+            opts.UseSqlServer(configuration.GetConnectionString("DbConnection"), b => b.MigrationsAssembly("DocsNetAPI")));
 
         services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<DocsNetDbContext>()

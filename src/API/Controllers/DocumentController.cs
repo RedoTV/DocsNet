@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers;
+namespace DocsNetAPI.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[Authorize]
 public class DocumentController : ControllerBase
 {
     private readonly ILogger<DocumentController> _logger;

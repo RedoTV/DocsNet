@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,12 +19,15 @@ public class DocsNetDbContext : IdentityDbContext<User>
         builder.Entity<Document>()
             .HasOne<User>()
             .WithMany(u => u.Documents)
-            .HasForeignKey(u => u.Id);
+            .HasPrincipalKey(u => u.Id)
+            .HasForeignKey(d => d.UserId);
 
         builder.Entity<DocumentHistory>()
             .HasOne<User>()
-            .WithMany(u => u.DocumentHistory);
-            
+            .WithMany(u => u.DocumentHistory)
+            .HasPrincipalKey(u => u.Id)
+            .HasForeignKey(dh => dh.UserId);
+
         base.OnModelCreating(builder);
     }
 }

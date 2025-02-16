@@ -1,3 +1,4 @@
+using Application.Mapper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -8,7 +9,7 @@ public static class DependencyInjection
         this IServiceCollection services
     )
     {
-        
+        services.AddAutoMapper(typeof(UserProfile));
 
         return services;
     }
