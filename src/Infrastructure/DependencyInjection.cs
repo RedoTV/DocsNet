@@ -1,5 +1,7 @@
 using System.Text;
 using Infrastructure.Identity;
+using Infrastructure.Services.Implementations;
+using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +20,7 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddDbContext<DocsNetDbContext>(opts => 
+        services.AddDbContext<DocsNetDbContext>(opts =>
             opts.UseSqlServer(configuration.GetConnectionString("DbConnection"), b => b.MigrationsAssembly("DocsNetAPI")));
 
         services.AddIdentity<User, IdentityRole>()
@@ -43,6 +45,8 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!))
             };
         });
+
+        services.AddTransient<IUserService, UserService>();
 
         return services;
     }

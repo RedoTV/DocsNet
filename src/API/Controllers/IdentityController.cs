@@ -1,4 +1,6 @@
+using Domain.Dtos;
 using Infrastructure.Identity;
+using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,22 +10,22 @@ namespace DocsNetAPI.Controllers;
 [Route("api/[controller]")]
 public class IdentityController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
+    private readonly IUserService _userService;
 
-    public IdentityController(UserManager<User> userManager)
+    public IdentityController(IUserService userService)
     {
-        _userManager = userManager;
-    }   
+        _userService = userService;
+    }
 
-    [HttpPost]
-    public IActionResult SignIn(User user)   
+    [HttpPost("SignIn")]
+    public IActionResult SignIn(User user)
     {
         return Ok();
     }
 
-    [HttpPost]
-    public IActionResult Register(User user)   
+    [HttpPost("Register")]
+    public async Task<IdentityResult?> Register(UserRegisterDto user)
     {
-        return Ok();
+        return await _userService.RegisterAsync(user);
     }
 }
