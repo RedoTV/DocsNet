@@ -1,4 +1,6 @@
 using Application.Mapper;
+using Application.Services.Implementations;
+using Application.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -9,7 +11,7 @@ public static class DependencyInjection
         this IServiceCollection services
     )
     {
-        services.AddAutoMapper(typeof(UserProfile));
+        services.AddTransient<IDocumentService, DocumentService>();
 
         return services;
     }

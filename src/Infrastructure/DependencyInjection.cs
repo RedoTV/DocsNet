@@ -1,12 +1,11 @@
 using System.Text;
+using Application.Mapper;
 using Infrastructure.Identity;
 using Infrastructure.Services.Implementations;
 using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +19,8 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
+        services.AddAutoMapper(typeof(DocumentProfile), typeof(UserProfile));
+
         services.AddDbContext<DocsNetDbContext>(opts =>
             opts.UseSqlServer(configuration.GetConnectionString("DbConnection"), b => b.MigrationsAssembly("DocsNetAPI")));
 
