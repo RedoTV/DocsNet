@@ -19,11 +19,19 @@ public class DocumentController : ControllerBase
     }
 
     [HttpPost("AddDocument")]
-    public async Task<Document> AddDocument()
+    public async Task<Document> AddDocument(IFormFile formFile)
     {
         string userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
         throw new NotImplementedException();
     }
 
+    [HttpGet("/{id}")]
+    public async Task<Document> GetDocument(int id)
+    {
+        string userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+
+        throw new NotImplementedException();
+    }
 }

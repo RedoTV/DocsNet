@@ -7,11 +7,11 @@ namespace Infrastructure.Identity;
 public class DocsNetDbContext : IdentityDbContext<User>
 {
     public DocsNetDbContext(DbContextOptions<DocsNetDbContext> options) : base(options)
-    { 
+    {
     }
 
-    public DbSet<Document> Documents { get;set; }
-    public DbSet<DocumentHistory> DocumentHistory { get;set;}
+    public DbSet<Document> Documents { get; set; }
+    public DbSet<DocumentHistory> DocumentHistory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
