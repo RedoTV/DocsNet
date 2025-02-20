@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DocsNetAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class IdentityController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -26,9 +26,8 @@ public class IdentityController : ControllerBase
     }
 
     [HttpPost("Register")]
-    public async Task<IActionResult> Register(UserRegisterDto user, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register(UserRegisterDto user)
     {
-        await Task.Delay(5000, cancellationToken);
         var identityResult = await _userService.RegisterAsync(user);
 
         if (identityResult is null)

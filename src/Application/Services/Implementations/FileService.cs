@@ -1,4 +1,5 @@
 using Application.Services.Interfaces;
+using Domain.Dtos.File;
 
 namespace Application.Services.Implementations;
 
@@ -9,20 +10,17 @@ public class FileService : IFileService
     public FileService(string fileStoragePath)
     {
         _fileStoragePath = fileStoragePath;
+        EnsureDirectoryExists();
     }
 
-    public async Task<string> SaveFileAsync(Stream fileStream, string fileName, string contentType, CancellationToken cancellationToken)
+    public async Task<string> SaveFileAsync(FileData fileData, CancellationToken cancellationToken)
     {
-        var filePath = Path.Combine(_fileStoragePath, fileName);
-
-        if (!Directory.Exists(_fileStoragePath))
-        {
-            Directory.CreateDirectory(_fileStoragePath);
-        }
+        var fileGuid = GenerateGuidFileName(fileData.FileName);
+        var filePath = Path.Combine(_fileStoragePath, fileGuid);
 
         using (var fileStreamDestination = new FileStream(filePath, FileMode.Create))
         {
-            await fileStream.CopyToAsync(fileStreamDestination, cancellationToken);
+            await fileData.FileStream.CopyToAsync(fileStreamDestination, cancellationToken);
         }
 
         return filePath;
@@ -40,5 +38,17 @@ public class FileService : IFileService
 
             return false;
         });
+    }
+
+    private string GenerateGuidFileName(string originalFileName)
+    {
+        var extension = Path.GetExtension(originalFileName);
+        return string.Concat(Guid.NewGuid().ToString("N"), extension);
+    }
+
+    private void EnsureDirectoryExists()
+    {
+        if (!Directory.Exists(_fileStoragePath))
+            Directory.CreateDirectory(_fileStoragePath);
     }
 }

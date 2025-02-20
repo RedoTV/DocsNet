@@ -56,4 +56,10 @@ public class DocumentRepository : IFileReadRepository<Document>, IFileWriteRepos
             .SetProperty(d => d.ExpirationDate, file.ExpirationDate),
             cancellationToken);
     }
+
+    public async Task<Document?> GetUserFileAsync(int documentId, string userId)
+    {
+        return await _docsNetDb.Documents
+            .FirstOrDefaultAsync(d => d.Id == documentId && d.UserId == userId);
+    }
 }

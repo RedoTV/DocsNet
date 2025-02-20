@@ -1,11 +1,9 @@
-using Domain.Dtos.File;
+namespace DocsNetAPI.Dtos.Document;
 
-namespace Domain.Dtos.Document;
-
-public class DocumentUploadDto
+public class DocumentUploadRequest
 {
     public string DocumentName { get; set; } = string.Empty;
     public string DocumentDescription { get; set; } = string.Empty;
     public DateTime ExpirationDate { get; set; }
-    public FileData FileData { get; set; } = null!;
+    public IFormFile File { get; set; } = null!;
 }

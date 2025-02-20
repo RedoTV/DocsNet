@@ -12,6 +12,7 @@ public class DocumentHistory
     public required string DocumentName { get; set; }
     public string Description { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
 
     // date when document should be deleted from history
     public DateTime ExpirationDate { get; set; } = DateTime.UtcNow.AddDays(30);

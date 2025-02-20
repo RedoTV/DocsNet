@@ -17,8 +17,7 @@ public static class DependencyInjection
             configuration["FileStoragePath"] ?? "wwwroot/documents"
         );
 
-        services.AddScoped<IFileService>(provider =>
-            new FileService(fileStoragePath));
+        services.AddScoped<IFileService>(provider => new FileService(fileStoragePath));
         services.AddScoped<IDocumentService, DocumentService>();
 
         return services;

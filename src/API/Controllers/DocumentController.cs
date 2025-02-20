@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Application.Services.Interfaces;
+using DocsNetAPI.Dtos.Document;
 using Domain.Dtos.Document;
+using Domain.Dtos.File;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,24 +20,35 @@ public class DocumentController : ControllerBase
         _documentService = documentService;
     }
 
-    [HttpPost("UploadDocument")]
-    public async Task<IActionResult> UploadDocument(IFormFile formFile)
+    [HttpPost]
+    public async Task<IActionResult> UploadDocument(DocumentUploadRequest documentUploadData)
     {
-        if (formFile == null || formFile.Length == 0)
+        if (documentUploadData.File is null || documentUploadData.File.Length == 0)
         {
-            return BadRequest("Файл не выбран.");
+            return BadRequest("File is not selected");
         }
 
         string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
         var documentDto = new DocumentUploadDto
         {
-            DocumentName = formFile.FileName,
-            Stream = formFile.OpenReadStream(),
-            ContentType = formFile.ContentType
+            DocumentName = documentUploadData.File.FileName,
+            DocumentDescription = documentUploadData.DocumentDescription,
+            ExpirationDate = documentUploadData.ExpirationDate,
+            FileData = new FileData()
+            {
+                FileName = documentUploadData.File.FileName,
+                FileStream = documentUploadData.File.OpenReadStream(),
+                ContentType = documentUploadData.File.ContentType
+            }
         };
 
-        var uploadedDocument = await _documentService.UploadDocumentAsync(documentDto, userId, HttpContext.RequestAborted);
+        var uploadedDocument = await _documentService
+            .UploadDocumentAsync(
+                documentDto,
+                userId,
+                HttpContext.RequestAborted
+            );
 
         return Ok(new { documentId = uploadedDocument.Id, filePath = uploadedDocument.FilePath });
     }
@@ -47,9 +60,9 @@ public class DocumentController : ControllerBase
 
         var document = await _documentService.GetDocumentByIdAsync(id, HttpContext.RequestAborted);
 
-        if (document == null || document.UserId != userId)
+        if (document is null || document.UserId != userId)
         {
-            return NotFound("Документ не найден или доступ запрещен.");
+            return NotFound(new { message = "Document not found" });
         }
 
         return Ok(new { documentId = document.Id, name = document.Name, filePath = document.FilePath });
@@ -64,9 +77,26 @@ public class DocumentController : ControllerBase
 
         if (!isDeleted)
         {
-            return NotFound("Документ не найден или доступ запрещен.");
+            return NotFound(new { message = "Document not found" });
         }
 
         return NoContent();
+    }
+
+    [HttpGet("download/{documentId}")]
+    public async Task<IActionResult> DownloadDocument(int documentId, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var document = await _documentService.GetDocumentByIdAsync(documentId, cancellationToken);
+
+        if (document is null)
+            return NotFound(new { message = "Document not found" });
+
+        if (document.UserId != userId)
+            return NotFound(new { message = "Access denied" });
+
+        var fileStream = new FileStream(document.FilePath, FileMode.Open, FileAccess.Read);
+        return File(fileStream, document.ContentType);
     }
 }
