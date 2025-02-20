@@ -5,7 +5,8 @@ namespace Application.Services.Interfaces;
 
 public interface IDocumentService
 {
-    public Task UploadDocumentAsync(DocumentUploadDto document, Stream stream, CancellationToken cancellationToken);
-    public Task RemoveDocumentAsync(DocumentRemoveDto document, CancellationToken cancellationToken);
-    public Task UpdateDocumentAsync(DocumentUpdateDto document, CancellationToken cancellationToken);
+    Task<Document?> GetDocumentByIdAsync(int documentId, CancellationToken cancellationToken);
+    Task<Document> UploadDocumentAsync(DocumentUploadDto documentDto, string userId, CancellationToken cancellationToken);
+    Task<bool> RemoveDocumentAsync(int documentId, string userId, CancellationToken cancellationToken);
+    Task UpdateDocumentAsync(DocumentUpdateDto document, CancellationToken cancellationToken);
 }

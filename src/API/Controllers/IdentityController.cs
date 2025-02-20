@@ -26,9 +26,11 @@ public class IdentityController : ControllerBase
     }
 
     [HttpPost("Register")]
-    public async Task<IActionResult> Register(UserRegisterDto user)
+    public async Task<IActionResult> Register(UserRegisterDto user, CancellationToken cancellationToken)
     {
+        await Task.Delay(5000, cancellationToken);
         var identityResult = await _userService.RegisterAsync(user);
+
         if (identityResult is null)
             return BadRequest(new { message = "Invalid user form data" });
 

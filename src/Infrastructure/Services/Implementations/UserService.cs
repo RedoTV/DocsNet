@@ -48,7 +48,8 @@ public class UserService : IUserService
         if (user is null)
             return null;
 
-        SignInResult? signInResult = await _signInManager.PasswordSignInAsync(user, userDto.Password, false, lockoutOnFailure: true);
+        SignInResult? signInResult =
+            await _signInManager.PasswordSignInAsync(user, userDto.Password, false, lockoutOnFailure: true);
         if (!signInResult.Succeeded)
             return null;
 
