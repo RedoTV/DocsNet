@@ -54,6 +54,8 @@ public static class DependencyInjection
 
         services.AddTransient<IUserService, UserService>();
 
+        services.AddHostedService<DocumentExpirationService>();
+
         return services;
     }
 }

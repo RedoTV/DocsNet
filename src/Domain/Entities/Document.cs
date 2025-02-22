@@ -18,4 +18,17 @@ public class Document
 
     public ICollection<DocumentComment> Comments { get; set; } = new List<DocumentComment>();
     public string UserId { get; set; } = string.Empty;
+
+    public Document DeepCopy()
+    {
+        Document clone = (Document)MemberwiseClone();
+        clone.Name = new string(Name);
+        clone.Description = new string(Description);
+        clone.FilePath = new string(FilePath);
+        clone.ContentType = new string(ContentType);
+        clone.ShareLink = new string(ShareLink);
+        clone.UserId = new string(UserId);
+
+        return clone;
+    }
 }

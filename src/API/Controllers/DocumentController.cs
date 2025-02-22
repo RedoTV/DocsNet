@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Application.Services.Interfaces;
+using AutoMapper;
 using DocsNetAPI.Dtos.Document;
 using Domain.Dtos.Document;
 using Domain.Dtos.File;
@@ -14,14 +15,16 @@ namespace DocsNetAPI.Controllers;
 public class DocumentController : ControllerBase
 {
     private readonly IDocumentService _documentService;
+    private readonly IMapper _mapper;
 
-    public DocumentController(IDocumentService documentService)
+    public DocumentController(IDocumentService documentService, IMapper mapper)
     {
         _documentService = documentService;
+        _mapper = mapper;
     }
 
     [HttpPost]
-    public async Task<IActionResult> UploadDocument(DocumentUploadRequest documentUploadData)
+    public async Task<IActionResult> UploadDocument([FromForm] DocumentUploadRequest documentUploadData, CancellationToken cancellationToken)
     {
         if (documentUploadData.File is null || documentUploadData.File.Length == 0)
         {
@@ -29,58 +32,57 @@ public class DocumentController : ControllerBase
         }
 
         string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        var documentDto = _mapper.Map<DocumentUploadDto>(documentUploadData);
 
-        var documentDto = new DocumentUploadDto
-        {
-            DocumentName = documentUploadData.File.FileName,
-            DocumentDescription = documentUploadData.DocumentDescription,
-            ExpirationDate = documentUploadData.ExpirationDate,
-            FileData = new FileData()
-            {
-                FileName = documentUploadData.File.FileName,
-                FileStream = documentUploadData.File.OpenReadStream(),
-                ContentType = documentUploadData.File.ContentType
-            }
-        };
-
-        var uploadedDocument = await _documentService
-            .UploadDocumentAsync(
-                documentDto,
-                userId,
-                HttpContext.RequestAborted
-            );
-
-        return Ok(new { documentId = uploadedDocument.Id, filePath = uploadedDocument.FilePath });
+        var uploadedDocument = await _documentService.UploadDocumentAsync(documentDto, userId, cancellationToken);
+        return Ok(new { documentId = uploadedDocument.Id });
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetDocument(int id)
+    public async Task<IActionResult> GetDocument(int id, CancellationToken cancellationToken)
     {
         string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        var document = await _documentService.GetDocumentByIdAsync(id, HttpContext.RequestAborted);
+        var document = await _documentService.GetDocumentByIdAsync(id, cancellationToken);
 
         if (document is null || document.UserId != userId)
         {
             return NotFound(new { message = "Document not found" });
         }
 
-        return Ok(new { documentId = document.Id, name = document.Name, filePath = document.FilePath });
+        return Ok(_mapper.Map<DocumentResponseDto>(document));
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteDocument(int id)
+    public async Task<IActionResult> DeleteDocument(int id, CancellationToken cancellationToken)
     {
         string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        bool isDeleted = await _documentService.RemoveDocumentAsync(id, userId, HttpContext.RequestAborted);
+        bool isDeleted = await _documentService.RemoveDocumentAsync(id, userId, cancellationToken);
 
         if (!isDeleted)
         {
             return NotFound(new { message = "Document not found" });
         }
 
-        return NoContent();
+        return Ok(new { isDeleted = isDeleted });
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdateDocument([FromForm] DocumentUpdateRequest updateRequest, CancellationToken cancellationToken)
+    {
+        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        var documentDto = _mapper.Map<DocumentUpdateDto>(updateRequest);
+
+        try
+        {
+            await _documentService.UpdateDocumentAsync(documentDto, userId, cancellationToken);
+            return Ok(new { message = "Document updated successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     [HttpGet("download/{documentId}")]

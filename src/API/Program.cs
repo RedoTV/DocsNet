@@ -2,12 +2,13 @@ using Infrastructure;
 using Application;
 using Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
+using DocsNetAPI.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAutoMapper(typeof(DocumentFormProfile));
 
 builder.Services.AddControllers();
 

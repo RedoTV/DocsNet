@@ -39,6 +39,12 @@ public class DocumentRepository : IFileReadRepository<Document>, IFileWriteRepos
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<Document?> GetUserFileAsync(int documentId, string userId)
+    {
+        return await _docsNetDb.Documents
+            .FirstOrDefaultAsync(d => d.Id == documentId && d.UserId == userId);
+    }
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         await _docsNetDb.SaveChangesAsync(cancellationToken);
@@ -57,9 +63,22 @@ public class DocumentRepository : IFileReadRepository<Document>, IFileWriteRepos
             cancellationToken);
     }
 
-    public async Task<Document?> GetUserFileAsync(int documentId, string userId)
+    public async Task<Document?> GetFileByShareLinkAsync(string shareLink, CancellationToken cancellationToken)
     {
         return await _docsNetDb.Documents
-            .FirstOrDefaultAsync(d => d.Id == documentId && d.UserId == userId);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.ShareLink == shareLink, cancellationToken);
+    }
+
+    public async Task<string?> GetShareLink(string userId, int documentId, CancellationToken cancellationToken)
+    {
+        var document = await _docsNetDb.Documents
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.UserId == userId && d.Id == documentId, cancellationToken);
+
+        if (document is null)
+            return null;
+
+        return document.ShareLink;
     }
 }
