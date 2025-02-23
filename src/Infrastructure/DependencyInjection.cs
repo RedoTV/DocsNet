@@ -25,6 +25,7 @@ public static class DependencyInjection
 
         services.AddScoped<IFileReadRepository<Document>, DocumentRepository>();
         services.AddScoped<IFileWriteRepository<Document>, DocumentRepository>();
+        services.AddScoped<ICommentsRepository, CommentsRepository>();
 
         services.AddDbContext<DocsNetDbContext>(opts =>
             opts.UseSqlServer(configuration.GetConnectionString("DbConnection"), b => b.MigrationsAssembly("DocsNetAPI")));
@@ -52,7 +53,7 @@ public static class DependencyInjection
             };
         });
 
-        services.AddTransient<IUserService, UserService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddHostedService<DocumentExpirationService>();
 

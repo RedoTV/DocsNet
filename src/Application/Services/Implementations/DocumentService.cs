@@ -4,6 +4,7 @@ using Application.Helpers;
 using Application.Services.Interfaces;
 using AutoMapper;
 using Domain.Dtos.Document;
+using Domain.Dtos.File;
 using Domain.Entities;
 
 namespace Application.Services.Implementations;
@@ -38,7 +39,7 @@ public class DocumentService : IDocumentService
         document.UserId = userId;
         document.FilePath = filePath;
         document.ContentType = documentDto.FileData.ContentType;
-        document.ShareLink = await GenerateShareLinkAsync(document.ShareLink, cancellationToken);
+        document.ShareLink = await GenerateShareLinkAsync(cancellationToken);
 
         await _documentWriteRepository
             .AddFileAsync(document, cancellationToken);
@@ -90,14 +91,15 @@ public class DocumentService : IDocumentService
         await _documentWriteRepository.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<string> GenerateShareLinkAsync(string documentName, CancellationToken cancellationToken)
+    private async Task<string> GenerateShareLinkAsync(CancellationToken cancellationToken)
     {
         string shareLink = "";
         await Task.Run(() =>
         {
             using var sha256 = SHA256.Create();
-            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(documentName));
-            shareLink = Convert.ToBase64String(hashBytes).Replace("/", "_").Replace("+", "-");
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()));
+            shareLink = Convert.ToBase64String(hashBytes)
+                .Replace("/", "_").Replace("+", "-").Replace('?', '1').Replace('=', '2');
         }, cancellationToken);
 
         return shareLink;
@@ -109,17 +111,45 @@ public class DocumentService : IDocumentService
             .GetFileByShareLinkAsync(shareLink, cancellationToken);
 
         if (originalDocument == null || originalDocument.ShareLink != shareLink)
-        {
             throw new ArgumentException("Invalid share link");
-        }
+
+        if (originalDocument.UserId == newUserId)
+            throw new ArgumentException("User already owner of document");
 
         var copiedDocument = originalDocument.DeepCopy();
+        copiedDocument.Id = 0;
         copiedDocument.ExpirationDate = newExpirationDate ?? originalDocument.ExpirationDate;
+        copiedDocument.UserId = newUserId;
+        copiedDocument.ShareLink = await GenerateShareLinkAsync(cancellationToken);
+        copiedDocument.FilePath = await CopyFile(originalDocument.FilePath, originalDocument.ContentType, cancellationToken);
 
         await _documentWriteRepository.AddFileAsync(copiedDocument, cancellationToken);
         await _documentWriteRepository.SaveChangesAsync(cancellationToken);
 
         return copiedDocument;
+    }
+
+    private async Task<string> CopyFile(string originalFilePath, string originalContentType, CancellationToken cancellationToken)
+    {
+        if (!File.Exists(originalFilePath))
+        {
+            throw new FileNotFoundException("Original file not found.");
+        }
+
+        string newFilePath = "";
+        using (var originalFileStream = new FileStream(originalFilePath, FileMode.Open, FileAccess.Read))
+        {
+            var fileData = new FileData
+            {
+                FileName = Path.GetFileName(originalFilePath),
+                ContentType = originalContentType,
+                FileStream = originalFileStream
+            };
+
+            newFilePath = await _fileService.SaveFileAsync(fileData, cancellationToken);
+        }
+
+        return newFilePath;
     }
 
     public async Task<string?> GetShareLinkAsync(string userId, int documentId, CancellationToken cancellationToken)

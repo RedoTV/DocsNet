@@ -12,6 +12,7 @@ public class DocsNetDbContext : IdentityDbContext<User>
 
     public DbSet<Document> Documents { get; set; }
     public DbSet<DocumentHistory> DocumentHistory { get; set; }
+    public DbSet<DocumentComment> DocumentComments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -26,6 +27,18 @@ public class DocsNetDbContext : IdentityDbContext<User>
             .WithMany(u => u.DocumentHistory)
             .HasPrincipalKey(u => u.Id)
             .HasForeignKey(dh => dh.UserId);
+
+        builder.Entity<DocumentComment>()
+            .HasOne<Document>()
+            .WithMany(d => d.Comments)
+            .HasForeignKey(dc => dc.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DocumentComment>()
+        .HasOne<User>()
+        .WithMany(u => u.Comments)
+        .HasForeignKey(dc => dc.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
 
         base.OnModelCreating(builder);
     }

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Application.Services.Interfaces;
+using Domain.Dtos.Link;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,16 +38,16 @@ public class LinkController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> CopyDocumentByShareLink(string shareLink, DateTime? newExpirationDate, CancellationToken cancellationToken)
+    public async Task<ActionResult> CopyDocumentByShareLink([FromBody] ShareLinkPostDto linkPostDto, CancellationToken cancellationToken)
     {
         string userId = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
         try
         {
             var copiedDocument = await _documentService.CopyDocumentByShareLinkAsync(
-                shareLink,
+                linkPostDto.ShareLink,
                 userId,
-                newExpirationDate,
+                linkPostDto.NewExpirationDate,
                 cancellationToken
             );
 
