@@ -1,5 +1,4 @@
 using System.Text;
-using Application.Mapper;
 using Application.Services.Interfaces;
 using Domain.Entities;
 using Infrastructure.Identity;
@@ -21,11 +20,10 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddAutoMapper(typeof(DocumentProfile), typeof(UserProfile));
-
         services.AddScoped<IFileReadRepository<Document>, DocumentRepository>();
         services.AddScoped<IFileWriteRepository<Document>, DocumentRepository>();
         services.AddScoped<ICommentsRepository, CommentsRepository>();
+        services.AddScoped<IMetadataRepository, MetadataRepository>();
 
         services.AddDbContext<DocsNetDbContext>(opts =>
             opts.UseSqlServer(configuration.GetConnectionString("DbConnection"), b => b.MigrationsAssembly("DocsNetAPI")));

@@ -3,12 +3,20 @@ using Application;
 using Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using DocsNetAPI.Mapper;
+using Application.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddAutoMapper(typeof(DocumentFormProfile));
+
+builder.Services.AddAutoMapper(
+    typeof(DocumentFormProfile),
+    typeof(DocumentProfile),
+    typeof(UserProfile),
+    typeof(CommentProfile),
+    typeof(MetadataProfile)
+);
 
 builder.Services.AddControllers();
 

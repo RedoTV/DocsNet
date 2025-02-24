@@ -13,6 +13,7 @@ public class DocsNetDbContext : IdentityDbContext<User>
     public DbSet<Document> Documents { get; set; }
     public DbSet<DocumentHistory> DocumentHistory { get; set; }
     public DbSet<DocumentComment> DocumentComments { get; set; }
+    public DbSet<DocumentMetadata> DocumentMetadata { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,10 +36,16 @@ public class DocsNetDbContext : IdentityDbContext<User>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<DocumentComment>()
-        .HasOne<User>()
-        .WithMany(u => u.Comments)
-        .HasForeignKey(dc => dc.UserId)
-        .OnDelete(DeleteBehavior.Restrict);
+            .HasOne<User>()
+            .WithMany(u => u.Comments)
+            .HasForeignKey(dc => dc.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<DocumentMetadata>()
+            .HasOne<Document>()
+            .WithOne(d => d.DocumentMetadata)
+            .HasForeignKey<DocumentMetadata>(m => m.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         base.OnModelCreating(builder);
     }

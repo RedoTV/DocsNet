@@ -18,6 +18,7 @@ public class Document
 
     public ICollection<DocumentComment> Comments { get; set; } = new List<DocumentComment>();
     public string UserId { get; set; } = string.Empty;
+    public DocumentMetadata DocumentMetadata { get; set; } = null!;
 
     public Document DeepCopy()
     {

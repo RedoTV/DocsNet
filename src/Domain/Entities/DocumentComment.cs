@@ -8,6 +8,7 @@ public class DocumentComment
     public int Id { get; set; }
     [Required]
     public string Text { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public int DocumentId { get; set; }
     public string UserId { get; set; } = string.Empty;

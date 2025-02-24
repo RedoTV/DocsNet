@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IFileService>(provider => new FileService(fileStoragePath));
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<ICommentsService, CommentsService>();
+        services.AddScoped<IMetadataService, MetadataService>();
 
         return services;
     }

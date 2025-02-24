@@ -27,6 +27,7 @@ public class DocumentRepository : IFileReadRepository<Document>, IFileWriteRepos
     public async Task<Document?> GetFileAsync(int fileId, CancellationToken cancellationToken)
     {
         return await _docsNetDb.Documents
+            .Include(d => d.DocumentMetadata)
             .AsNoTracking()
             .FirstOrDefaultAsync(d => d.Id == fileId, cancellationToken);
     }

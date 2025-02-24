@@ -18,24 +18,38 @@ public class IdentityController : ControllerBase
     [HttpPost("SignIn")]
     public async Task<IActionResult> SignIn(UserSignInDto user)
     {
-        var token = await _userService.SingInAsync(user);
-        if (token is null)
-            return BadRequest("Sign in Failed");
+        try
+        {
+            var token = await _userService.SingInAsync(user);
+            if (token is null)
+                return BadRequest("Sign in Failed");
 
-        return Ok(new { jwt = token });
+            return Ok(new { jwt = token });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPost("Register")]
     public async Task<IActionResult> Register(UserRegisterDto user)
     {
-        var identityResult = await _userService.RegisterAsync(user);
+        try
+        {
+            var identityResult = await _userService.RegisterAsync(user);
 
-        if (identityResult is null)
-            return BadRequest(new { message = "Invalid user form data" });
+            if (identityResult is null)
+                return BadRequest(new { message = "Invalid user form data" });
 
-        if (!identityResult.Succeeded)
-            return BadRequest(new { message = "Registration failed" });
+            if (!identityResult.Succeeded)
+                return BadRequest(new { message = "Registration failed" });
 
-        return Ok(identityResult);
+            return Ok(identityResult);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

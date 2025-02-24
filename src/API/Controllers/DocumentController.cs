@@ -3,7 +3,6 @@ using Application.Services.Interfaces;
 using AutoMapper;
 using DocsNetAPI.Dtos.Document;
 using Domain.Dtos.Document;
-using Domain.Dtos.File;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,46 +25,68 @@ public class DocumentController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> UploadDocument([FromForm] DocumentUploadRequest documentUploadData, CancellationToken cancellationToken)
     {
-        if (documentUploadData.File is null || documentUploadData.File.Length == 0)
+        try
         {
-            return BadRequest("File is not selected");
+            if (documentUploadData.File is null || documentUploadData.File.Length == 0)
+            {
+                return BadRequest("File is not selected");
+            }
+
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            var documentDto = _mapper.Map<DocumentUploadDto>(documentUploadData);
+
+            var uploadedDocument = await _documentService.UploadDocumentAsync(documentDto, userId, cancellationToken);
+
+            return Ok(new { documentId = uploadedDocument.Id });
         }
-
-        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-        var documentDto = _mapper.Map<DocumentUploadDto>(documentUploadData);
-
-        var uploadedDocument = await _documentService.UploadDocumentAsync(documentDto, userId, cancellationToken);
-        return Ok(new { documentId = uploadedDocument.Id });
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetDocument(int id, CancellationToken cancellationToken)
     {
-        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-
-        var document = await _documentService.GetDocumentByIdAsync(id, cancellationToken);
-
-        if (document is null || document.UserId != userId)
+        try
         {
-            return NotFound(new { message = "Document not found" });
-        }
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        return Ok(_mapper.Map<DocumentResponseDto>(document));
+            var document = await _documentService.GetDocumentByIdAsync(id, cancellationToken);
+
+            if (document is null || document.UserId != userId)
+            {
+                return NotFound(new { message = "Document not found" });
+            }
+
+            return Ok(_mapper.Map<DocumentResponseDto>(document));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteDocument(int id, CancellationToken cancellationToken)
     {
-        string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-
-        bool isDeleted = await _documentService.RemoveDocumentAsync(id, userId, cancellationToken);
-
-        if (!isDeleted)
+        try
         {
-            return NotFound(new { message = "Document not found" });
-        }
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
-        return Ok(new { isDeleted = isDeleted });
+            bool isDeleted = await _documentService.RemoveDocumentAsync(id, userId, cancellationToken);
+
+            if (!isDeleted)
+            {
+                return NotFound(new { message = "Document not found" });
+            }
+
+            return Ok(new { isDeleted = isDeleted });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPut]
@@ -88,17 +109,24 @@ public class DocumentController : ControllerBase
     [HttpGet("download/{documentId}")]
     public async Task<IActionResult> DownloadDocument(int documentId, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        var document = await _documentService.GetDocumentByIdAsync(documentId, cancellationToken);
+            var document = await _documentService.GetDocumentByIdAsync(documentId, cancellationToken);
 
-        if (document is null)
-            return NotFound(new { message = "Document not found" });
+            if (document is null)
+                return NotFound(new { message = "Document not found" });
 
-        if (document.UserId != userId)
-            return NotFound(new { message = "Access denied" });
+            if (document.UserId != userId)
+                return NotFound(new { message = "Access denied" });
 
-        var fileStream = new FileStream(document.FilePath, FileMode.Open, FileAccess.Read);
-        return File(fileStream, document.ContentType);
+            var fileStream = new FileStream(document.FilePath, FileMode.Open, FileAccess.Read);
+            return File(fileStream, document.ContentType);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
